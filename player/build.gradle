@@ -1,16 +1,4 @@
 //==================================================================================================
-// PROJECT
-//==================================================================================================
-buildscript {
-    repositories {
-        jcenter()
-        google()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
-    }
-}
-//==================================================================================================
 // ANDROID
 //==================================================================================================
 apply plugin: 'com.android.library'
@@ -31,6 +19,7 @@ android {
         }
     }
     lintOptions {
+        checkReleaseBuilds false
         abortOnError false
     }
     compileOptions {
@@ -39,6 +28,7 @@ android {
     }
 }
 dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     // JVM tests
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.robolectric:robolectric:4.5'
