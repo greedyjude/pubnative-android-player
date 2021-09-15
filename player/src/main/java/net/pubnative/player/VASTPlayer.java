@@ -103,6 +103,10 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
         void onVASTPlayerOpenOffer();
     }
 
+    public enum LifecycleState {
+        OnResume, OnPause
+    }
+
     private enum PlayerState {
 
         Empty,
@@ -111,6 +115,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
         Playing,
         Pause
     }
+
 
     // LISTENERS
     private Listener mListener = null;
@@ -162,6 +167,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
     private PlayerState   mPlayerState      = PlayerState.Empty;
     private List<Integer> mProgressTracker  = null;
     private double        mTargetAspect     = -1.0;
+    private LifecycleState mLifecycleState;
 
     public VASTPlayer(Context context) {
         super(context);
@@ -171,6 +177,11 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
 
         super(context, attrs, defStyleAttr);
     }
+
+    public void setLifecycleState(LifecycleState lifecycleState){
+        mLifecycleState = lifecycleState;
+    }
+
 
     /**
      * Sets the desired aspect ratio.  The value is <code>width / height</code>.
@@ -252,6 +263,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
             case Playing:
                 result = ((mPlayerState == PlayerState.Ready)
                           || (mPlayerState == PlayerState.Pause));
+                result = result && (mLifecycleState == LifecycleState.OnResume);
                 break;
             case Pause:
                 result = true;
@@ -867,7 +879,6 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
             mMediaPlayer.prepareAsync();
 
         } catch (Exception exception) {
-
             invokeOnFail(exception);
             destroy();
         }
