@@ -159,7 +159,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
     private Handler       mMainHandler      = null;
     private int           mVideoHeight      = 0;
     private int           mVideoWidth       = 0;
-    private boolean       mIsVideoMute      = false;
+    private boolean       mIsVideoMute      = true;
     private boolean       mIsBufferingShown = false;
     private boolean       mIsDataSourceSet  = false;
     private int           mQuartile         = 0;
@@ -182,6 +182,16 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
         mLifecycleState = lifecycleState;
     }
 
+    public void mute(){
+        if(!mIsVideoMute){
+            onMuteClick();
+        }
+    }
+    public void unmute(){
+        if(mIsVideoMute){
+            onMuteClick();
+        }
+    }
 
     /**
      * Sets the desired aspect ratio.  The value is <code>width / height</code>.
@@ -617,10 +627,9 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
 
             Uri uri = Uri.parse(clickThroughUrl);
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            ResolveInfo resolvable = getContext().getPackageManager().resolveActivity(intent, PackageManager.GET_INTENT_FILTERS);
+            ResolveInfo resolvable = getContext().getPackageManager().resolveActivity(intent,PackageManager.MATCH_DEFAULT_ONLY);
 
             if (resolvable == null) {
-
                 VASTLog.e(TAG, "openOffer -clickthrough error occured, uri unresolvable");
                 return;
 

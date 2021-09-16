@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:id="@+id/btn_load"
-        android:text="Load"
-        android:layout_alignParentTop="true"
-        android:onClick="onLoadClick"
+        android:id="@+id/btn_open"
+        android:text="OPEN AD"
         android:gravity="center"/>
 
     <Button
@@ -19,7 +17,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:id="@+id/btn_play"
-        android:layout_below="@id/btn_load"
         android:text="PLAY"
         android:onClick="onPlayClick"/>
     <Button
@@ -27,7 +24,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:id="@+id/btn_stop"
-        android:layout_below="@id/btn_play"
         android:text="STOP"
         android:onClick="onStopClick"/>
 
@@ -37,4 +33,4 @@
         android:layout_height="250dp"
         android:layout_below="@id/btn_stop"/>
 
-</RelativeLayout>
+</LinearLayout>
