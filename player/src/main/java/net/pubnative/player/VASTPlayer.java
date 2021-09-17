@@ -35,8 +35,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -55,10 +53,13 @@ import android.widget.TextView;
 
 import net.pubnative.player.model.TRACKING_EVENTS_TYPE;
 import net.pubnative.player.model.VASTModel;
+import net.pubnative.player.util.CacheManager;
 import net.pubnative.player.util.HttpTools;
 import net.pubnative.player.util.VASTLog;
 import net.pubnative.player.widget.CountDownView;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -889,7 +890,13 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
             if(!mIsDataSourceSet) {
                 mIsDataSourceSet = true;
                 String videoURL = mVastModel.getPickedMediaFileURL();
-                mMediaPlayer.setDataSource(videoURL);
+                File cachedFile = CacheManager.get(getContext(),videoURL);
+                if(cachedFile == null) {
+                    mMediaPlayer.setDataSource(videoURL);
+                } else {
+                    FileInputStream inputStream = new FileInputStream(cachedFile);
+                    mMediaPlayer.setDataSource(inputStream.getFD());
+                }
             }
 
             mMediaPlayer.prepareAsync();

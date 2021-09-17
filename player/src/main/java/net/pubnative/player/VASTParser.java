@@ -34,29 +34,44 @@ package net.pubnative.player;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import net.pubnative.player.model.VASTModel;
 import net.pubnative.player.processor.VASTMediaPicker;
 import net.pubnative.player.processor.VASTProcessor;
+import net.pubnative.player.util.CacheManager;
 import net.pubnative.player.util.DefaultMediaPicker;
-import net.pubnative.player.model.VASTModel;
 import net.pubnative.player.util.VASTLog;
+
+import java.util.HashMap;
 
 public class VASTParser extends AsyncTask<String, Object, VASTModel> {
 
     private static final String TAG = VASTParser.class.getName();
 
-    public static final int ERROR_NONE                   = 0;
-    public static final int ERROR_XML_OPEN_OR_READ       = 1;
-    public static final int ERROR_XML_PARSE              = 2;
-    public static final int ERROR_POST_VALIDATION        = 3;
+    public static final int ERROR_NONE = 0;
+    public static final int ERROR_XML_OPEN_OR_READ = 1;
+    public static final int ERROR_XML_PARSE = 2;
+    public static final int ERROR_POST_VALIDATION = 3;
     public static final int ERROR_EXCEEDED_WRAPPER_LIMIT = 4;
+    private static final HashMap<Integer,VASTModel> parsedVast = new HashMap<>();
 
-    private Context  context     = null;
-    private Listener listener    = null;
-    private int      resultError = ERROR_NONE;
+    public static Boolean hasParsed(String xml){
+        return parsedVast.containsKey(xml.hashCode());
+    }
+
+    public static VASTModel getParsedModel(String xml){
+        return parsedVast.get(xml.hashCode());
+    }
+
+    private Context context = null;
+    private Listener listener = null;
+    private int resultError = ERROR_NONE;
+
+
 
     public interface Listener {
 
         void onVASTParserError(int error);
+
         void onVASTParserFinished(VASTModel model);
     }
 
@@ -87,6 +102,12 @@ public class VASTParser extends AsyncTask<String, Object, VASTModel> {
         }
 
         if (vastXML != null) {
+            if(parsedVast.containsKey(vastXML.hashCode())){
+                VASTModel parsedResult = parsedVast.get(vastXML.hashCode());
+                if(parsedResult != null){
+                    return parsedResult;
+                }
+            }
 
             VASTMediaPicker mediaPicker = new DefaultMediaPicker(this.context);
             VASTProcessor processor = new VASTProcessor(mediaPicker);
@@ -96,6 +117,7 @@ public class VASTParser extends AsyncTask<String, Object, VASTModel> {
             if (error == ERROR_NONE) {
 
                 result = processor.getModel();
+                parsedVast.put(vastXML.hashCode(),result);
             }
         }
 
@@ -107,15 +129,29 @@ public class VASTParser extends AsyncTask<String, Object, VASTModel> {
 
         VASTLog.v(TAG, "onPostExecute");
 
-        if(this.listener != null){
+        if (this.listener != null) {
 
-            if(result == null){
-
+            if (result == null) {
                 this.listener.onVASTParserError(this.resultError);
 
             } else {
 
-                this.listener.onVASTParserFinished(result);
+                if (CacheManager.has(context, result.getPickedMediaFileURL())) {
+                    listener.onVASTParserFinished(result);
+                } else {
+                    CacheManager.CacheProgressListener cacheListener = new CacheManager.CacheProgressListener() {
+                        @Override
+                        public void onCacheSuccess() {
+                            listener.onVASTParserFinished(result);
+                        }
+
+                        @Override
+                        public void onCacheFailed(Throwable t) {
+                            listener.onVASTParserError(resultError);
+                        }
+                    };
+                    CacheManager.put(context, result.getPickedMediaFileURL(), cacheListener);
+                }
             }
         }
     }

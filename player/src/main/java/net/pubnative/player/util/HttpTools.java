@@ -31,13 +31,18 @@
 
 package net.pubnative.player.util;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class HttpTools {
-
+    private static Handler mainHandler = new Handler(Looper.getMainLooper());
     private static final String TAG = HttpTools.class.getName();
 
     public static void httpGetURL(final String url) {
@@ -84,5 +89,63 @@ public class HttpTools {
 
             VASTLog.w(TAG, "url is null or empty");
         }
+    }
+
+    public static  void  downloadFile(final String url, File outFile,NetworkRequestListener listener) {
+
+        if (!TextUtils.isEmpty(url)) {
+            new Thread() {
+
+                @Override
+                public void run() {
+
+                    HttpURLConnection conn = null;
+
+                    try {
+                        VASTLog.v(TAG, "connection to URL:" + url);
+                        URL httpUrl = new URL(url);
+
+                        HttpURLConnection.setFollowRedirects(true);
+                        conn = (HttpURLConnection) httpUrl.openConnection();
+                        conn.setRequestMethod("GET");
+
+                        FileOutputStream outputStream = new FileOutputStream(outFile);
+                        InputStream inputStream = conn.getInputStream();
+
+                        byte[] buffer = new byte[1024];
+                        int bufferLength = 0;
+
+                        while((bufferLength = inputStream.read(buffer)) > 0 ){
+                            outputStream.write(buffer,0,bufferLength);
+                        }
+
+                        outputStream.close();
+
+                        int code = conn.getResponseCode();
+                        VASTLog.v(TAG, "response code:" + code + ", for URL:" + url);
+
+                        conn.getInputStream().close();
+                        mainHandler.post(() -> listener.onRequestSuccess());
+                    } catch (Exception e) {
+                        VASTLog.w(TAG, url + ": " + e.getMessage() + ":" + e.toString());
+                        mainHandler.post(() -> listener.onRequestFailed(e));
+                    } finally {
+                        if (conn != null) {
+                            conn.disconnect();
+                        }
+                    }
+                }
+            }.start();
+
+        } else {
+            VASTLog.w(TAG, "url is null or empty");
+        }
+    }
+
+
+    interface NetworkRequestListener{
+        void onRequestSuccess();
+        void onRequestFailed(Throwable t);
+
     }
 }
