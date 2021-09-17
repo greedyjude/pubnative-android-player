@@ -171,11 +171,18 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
 
     public VASTPlayer(Context context) {
         super(context);
+        mMainHandler = new Handler(getContext().getMainLooper());
+
+        createLayout();
+        setEmptyState();
     }
 
     public VASTPlayer(Context context, AttributeSet attrs, int defStyleAttr) {
-
         super(context, attrs, defStyleAttr);
+        mMainHandler = new Handler(getContext().getMainLooper());
+
+        createLayout();
+        setEmptyState();
     }
 
     public void setLifecycleState(LifecycleState lifecycleState){
