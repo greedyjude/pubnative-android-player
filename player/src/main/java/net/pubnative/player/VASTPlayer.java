@@ -59,6 +59,7 @@ import net.pubnative.player.util.VASTLog;
 import net.pubnative.player.widget.CountDownView;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -895,7 +896,9 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
                     mMediaPlayer.setDataSource(videoURL);
                 } else {
                     FileInputStream inputStream = new FileInputStream(cachedFile);
-                    mMediaPlayer.setDataSource(inputStream.getFD());
+                    FileDescriptor descriptor = inputStream.getFD();
+                    mMediaPlayer.setDataSource(descriptor);
+                    inputStream.close();
                 }
             }
 
