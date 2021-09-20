@@ -59,8 +59,6 @@ import net.pubnative.player.util.VASTLog;
 import net.pubnative.player.widget.CountDownView;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,13 +66,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompletionListener,
-                                                          MediaPlayer.OnErrorListener,
-                                                          MediaPlayer.OnPreparedListener,
-                                                          MediaPlayer.OnVideoSizeChangedListener,
-                                                          View.OnClickListener {
+        MediaPlayer.OnErrorListener,
+        MediaPlayer.OnPreparedListener,
+        MediaPlayer.OnVideoSizeChangedListener,
+        View.OnClickListener {
     //SurfaceHolder.Callback {
 
-    private static final String TAG            = VASTPlayer.class.getName();
+    private static final String TAG = VASTPlayer.class.getName();
     private static final String TEXT_BUFFERING = "Buffering...";
 
     /**
@@ -129,7 +127,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
 
     private static final long TIMER_TRACKING_INTERVAL = 250;
     private static final long TIMER_PROGRESS_INTERVAL = 50;
-    private static final long TIMER_LAYOUT_INTERVAL   = 50;
+    private static final long TIMER_LAYOUT_INTERVAL = 50;
 
     private static final int MAX_PROGRESS_TRACKING_POINTS = 20;
 
@@ -138,37 +136,38 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
 
     // DATA
     private VASTModel mVastModel;
-    private String    mSkipName;
-    private int       mSkipDelay;
+    private String mSkipName;
+    private int mSkipDelay;
 
     // PLAYER
     private MediaPlayer mMediaPlayer;
 
     // VIEWS
-    private View          mRoot;
-    private View          mOpen;
+    private View mRoot;
+    private View mOpen;
     // Load
-    private View          mLoader;
-    private TextView      mLoaderText;
+    private View mLoader;
+    private TextView mLoaderText;
     // Player
-    private View          mPlayer;
-    private SurfaceView   mSurface;
-    private TextView      mSkip;
-    private ImageView     mMute;
+    private View mPlayer;
+    private SurfaceView mSurface;
+    private RelativeLayout mSurfaceHolder;
+    private TextView mSkip;
+    private ImageView mMute;
     private CountDownView mCountDown;
 
     // OTHERS
-    private Handler       mMainHandler      = null;
-    private int           mVideoHeight      = 0;
-    private int           mVideoWidth       = 0;
-    private boolean       mIsVideoMute      = true;
-    private boolean       mIsBufferingShown = false;
-    private boolean       mIsDataSourceSet  = false;
-    private int           mQuartile         = 0;
-    private CampaignType  mCampaignType     = CampaignType.CPM;
-    private PlayerState   mPlayerState      = PlayerState.Empty;
-    private List<Integer> mProgressTracker  = null;
-    private double        mTargetAspect     = -1.0;
+    private Handler mMainHandler = null;
+    private int mVideoHeight = 0;
+    private int mVideoWidth = 0;
+    private boolean mIsVideoMute = true;
+    private boolean mIsBufferingShown = false;
+    private boolean mIsDataSourceSet = false;
+    private int mQuartile = 0;
+    private CampaignType mCampaignType = CampaignType.CPM;
+    private PlayerState mPlayerState = PlayerState.Empty;
+    private List<Integer> mProgressTracker = null;
+    private double mTargetAspect = -1.0;
     private LifecycleState mLifecycleState;
 
     public VASTPlayer(Context context) {
@@ -187,17 +186,18 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
         setEmptyState();
     }
 
-    public void setLifecycleState(LifecycleState lifecycleState){
+    public void setLifecycleState(LifecycleState lifecycleState) {
         mLifecycleState = lifecycleState;
     }
 
-    public void mute(){
-        if(!mIsVideoMute){
+    public void mute() {
+        if (!mIsVideoMute) {
             onMuteClick();
         }
     }
-    public void unmute(){
-        if(mIsVideoMute){
+
+    public void unmute() {
+        if (mIsVideoMute) {
             onMuteClick();
         }
     }
@@ -239,7 +239,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
                 // 1280x720 to scaled 1280x719 because of some floating-point round-off error,
                 // so if we're really close just leave it alone.
                 Log.v(TAG, "aspect ratio is good (target=" + mTargetAspect +
-                           ", view=" + initialWidth + "x" + initialHeight + ")");
+                        ", view=" + initialWidth + "x" + initialHeight + ")");
             } else {
                 if (aspectDiff > 0) {
                     // limited by narrow width; restrict height
@@ -249,7 +249,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
                     initialWidth = (int) (initialHeight * mTargetAspect);
                 }
                 Log.v(TAG, "new size=" + initialWidth + "x" + initialHeight + " + padding " +
-                           horizPadding + "x" + vertPadding);
+                        horizPadding + "x" + vertPadding);
                 initialWidth += horizPadding;
                 initialHeight += vertPadding;
                 widthMeasureSpec = MeasureSpec.makeMeasureSpec(initialWidth, MeasureSpec.EXACTLY);
@@ -281,7 +281,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
                 break;
             case Playing:
                 result = ((mPlayerState == PlayerState.Ready)
-                          || (mPlayerState == PlayerState.Pause));
+                        || (mPlayerState == PlayerState.Pause));
                 result = result && (mLifecycleState == LifecycleState.OnResume);
                 break;
             case Pause:
@@ -395,7 +395,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
         if (mSurface != null && mSurface.getHolder() != null) {
             final Surface surface = mSurface.getHolder().getSurface();
 
-            if ( surface.isValid() ) {
+            if (surface.isValid()) {
                 mMediaPlayer.setDisplay(mSurface.getHolder());
             }
         }
@@ -551,7 +551,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
         if (canSetState(PlayerState.Loading) && mIsDataSourceSet) {
 
             stopTimers();
-            if(mMediaPlayer != null) {
+            if (mMediaPlayer != null) {
                 mMediaPlayer.stop();
                 mMediaPlayer.reset();
                 mIsDataSourceSet = false;
@@ -571,7 +571,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
 
         if (canSetState(PlayerState.Pause) && mIsDataSourceSet) {
 
-            if(mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
                 mMediaPlayer.seekTo(0);
                 mMediaPlayer.pause();
             }
@@ -636,7 +636,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
 
             Uri uri = Uri.parse(clickThroughUrl);
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            ResolveInfo resolvable = getContext().getPackageManager().resolveActivity(intent,PackageManager.MATCH_DEFAULT_ONLY);
+            ResolveInfo resolvable = getContext().getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
 
             if (resolvable == null) {
                 VASTLog.e(TAG, "openOffer -clickthrough error occured, uri unresolvable");
@@ -725,7 +725,7 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
 
     private void showLoader(String message) {
 
-        if(mPlayerState != PlayerState.Pause) {
+        if (mPlayerState != PlayerState.Pause) {
             mLoader.setVisibility(VISIBLE);
             mLoaderText.setText(message);
             mLoaderText.setVisibility(TextUtils.isEmpty(message) ? GONE : VISIBLE);
@@ -883,28 +883,24 @@ public class VASTPlayer extends RelativeLayout implements MediaPlayer.OnCompleti
     }
 
     private void startCaching() {
-
         VASTLog.v(TAG, "startCaching");
 
         try {
 
-            if(!mIsDataSourceSet) {
+            if (!mIsDataSourceSet) {
                 mIsDataSourceSet = true;
                 String videoURL = mVastModel.getPickedMediaFileURL();
-                File cachedFile = CacheManager.get(getContext(),videoURL);
-                if(cachedFile == null) {
+                File cachedFile = CacheManager.get(getContext(), videoURL);
+                if (cachedFile == null) {
                     mMediaPlayer.setDataSource(videoURL);
                 } else {
-                    FileInputStream inputStream = new FileInputStream(cachedFile);
-                    FileDescriptor descriptor = inputStream.getFD();
-                    mMediaPlayer.setDataSource(descriptor);
-                    inputStream.close();
+                    mMediaPlayer.setDataSource(cachedFile.getAbsolutePath());
                 }
             }
-
             mMediaPlayer.prepareAsync();
 
         } catch (Exception exception) {
+            Log.d(TAG, "Failed to set video source", exception);
             invokeOnFail(exception);
             destroy();
         }
